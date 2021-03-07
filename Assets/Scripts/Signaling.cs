@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class Signaling : MonoBehaviour
 {
@@ -11,21 +9,24 @@ public class Signaling : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.TryGetComponent<Thief>(out Thief thief))
-            StartCoroutine(PlaySound());
+        SelectAction(collision, "startSound");
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        SelectAction(collision, "stopSound");
     }
 
     private IEnumerator PlaySound()
     {
-        _sound.volume = 0;
-
         float targetVolume = 1;
+        float startVolume = 0;
 
         _sound.Play();
 
-        for (int i = 0; i < 100; i++)
+        for (float i = startVolume; i <= targetVolume; i += _maxDeltaVolume)
         {
-            _sound.volume = Mathf.MoveTowards(_sound.volume, targetVolume, _maxDeltaVolume);
+            _sound.volume = i;
 
             yield return null;
         }
@@ -34,10 +35,11 @@ public class Signaling : MonoBehaviour
     private IEnumerator StopSound()
     {
         float targetVolume = 0;
+        float startVolume = 1;
 
-        for (int i = 0; i < 100; i++)
+        for (float i = startVolume; i >= targetVolume; i -= _maxDeltaVolume)
         {
-            _sound.volume = Mathf.MoveTowards(_sound.volume, targetVolume, _maxDeltaVolume);
+            _sound.volume = i;
 
             yield return null;
         }
@@ -45,9 +47,14 @@ public class Signaling : MonoBehaviour
         _sound.Stop();
     }
 
-    private void OnTriggerExit2D(Collider2D collision)
+    private void SelectAction(Collider2D collision, string coroutine)
     {
         if (collision.TryGetComponent<Thief>(out Thief thief))
-            StartCoroutine(StopSound());
+        {
+            if (coroutine.Equals("startSound"))
+                StartCoroutine(PlaySound());
+            else
+                StartCoroutine(StopSound());
+        }
     }
 }
