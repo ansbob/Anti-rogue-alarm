@@ -7,14 +7,18 @@ public class Signaling : MonoBehaviour
 
     private float _maxDeltaVolume = 0.01f;
 
+    private bool _switchSound;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        SelectAction(collision, "startSound");
+        _switchSound = true;
+        SelectAction(collision, _switchSound);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        SelectAction(collision, "stopSound");
+        _switchSound = false;
+        SelectAction(collision, _switchSound);
     }
 
     private IEnumerator PlaySound()
@@ -47,11 +51,11 @@ public class Signaling : MonoBehaviour
         _sound.Stop();
     }
 
-    private void SelectAction(Collider2D collision, string coroutine)
+    private void SelectAction(Collider2D collision, bool switchSound)
     {
         if (collision.TryGetComponent<Thief>(out Thief thief))
         {
-            if (coroutine.Equals("startSound"))
+            if (switchSound)
                 StartCoroutine(PlaySound());
             else
                 StartCoroutine(StopSound());
